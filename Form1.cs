@@ -17,6 +17,9 @@ namespace Estrelas
         List<object> AllControls = new List<object>();
         List<LuaButton> Lbuttons = new List<LuaButton>();
         List<LuaLabel> Llabels = new List<LuaLabel>();
+
+
+
         public Form1()
         {
             InitializeComponent();
@@ -188,7 +191,6 @@ namespace Estrelas
 
                 }
             };
-
             button.MouseHover += async (e, s) =>
             {
                 var funct = state.Environment[$"btn{buton.id}_hover"];

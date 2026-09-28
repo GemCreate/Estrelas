@@ -20,6 +20,7 @@ namespace Estrelas
         }
   
         // TODO: Implement x and y coords instead of flow layout
+        // Nah fuck that who cares!
 
 
         [LuaMember("id")]
