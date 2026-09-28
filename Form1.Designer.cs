@@ -35,12 +35,14 @@
             textBox1 = new TextBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             timer1 = new System.Windows.Forms.Timer(components);
+            button3 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = Color.FromArgb(64, 64, 64);
+            panel1.Controls.Add(button3);
             panel1.Controls.Add(button2);
             panel1.Controls.Add(button1);
             panel1.Controls.Add(textBox1);
@@ -93,6 +95,17 @@
             timer1.Interval = 500;
             timer1.Tick += timer1_Tick;
             // 
+            // button3
+            // 
+            button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            button3.Location = new Point(595, 12);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 23);
+            button3.TabIndex = 3;
+            button3.Text = "Refresh";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -115,5 +128,6 @@
         private Button button2;
         private FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Timer timer1;
+        private Button button3;
     }
 }

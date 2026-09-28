@@ -10,7 +10,7 @@ namespace Estrelas
     public partial class LuaButton
     {
 
-        public LuaButton(string _name, string _id, int _width, int _height)
+        public LuaButton(string _name, string? _id, int _width, int _height)
         {
             this.name = _name;
             this.id = _id;
@@ -23,7 +23,7 @@ namespace Estrelas
 
 
         [LuaMember("id")]
-        public string id { get; set; } = "";
+        public string? id { get; set; } = "";
 
         [LuaMember("name")]
         public string name { get; set; } = "";
@@ -39,6 +39,38 @@ namespace Estrelas
 
     }
 
+    [LuaObject]
+    public partial class LuaLabel
+    {
 
+        public LuaLabel(string _name, string? _id, int _fnt)
+        {
+            this.name = _name;
+            this.id = _id;
+            this.fontScale = _fnt;
+
+
+        }
+
+        // TODO: Implement x and y coords instead of flow layout
+
+
+        [LuaMember("id")]
+        public string? id { get; set; } = "";
+
+        [LuaMember("name")]
+        public string name { get; set; } = "";
+
+        [LuaMember("font_scale")]
+        public int fontScale { get; set; } = 0;
+
+
+
+
+        public Label lbl { get; set; }
 
     }
+
+
+
+}
