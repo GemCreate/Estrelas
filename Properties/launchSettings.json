@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Estrelas": {
+      "commandName": "Project",
+      "commandLineArgs": "https://bwe.aquaweb.cc/test.lua"
+    }
+  }
+}

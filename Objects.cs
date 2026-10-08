@@ -53,7 +53,7 @@ namespace Estrelas
 
         }
 
-        // TODO: Implement x and y coords instead of flow layout
+       
 
 
         [LuaMember("id")]
@@ -69,6 +69,38 @@ namespace Estrelas
 
 
         public Label lbl { get; set; }
+
+    }
+
+    [LuaObject]
+    public partial class LTxtInput
+    {
+
+        public LTxtInput(string _name, string? _id, int _fnt)
+        {
+            this.name = _name;
+            this.id = _id;
+            this.fontScale = _fnt;
+
+
+        }
+
+        
+
+
+        [LuaMember("id")]
+        public string? id { get; set; } = "";
+
+        [LuaMember("name")]
+        public string name { get; set; } = "";
+
+        [LuaMember("font_scale")]
+        public int fontScale { get; set; } = 0;
+
+
+
+
+        public TextBox txt { get; set; }
 
     }
 

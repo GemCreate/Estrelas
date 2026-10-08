@@ -30,12 +30,12 @@
         {
             components = new System.ComponentModel.Container();
             panel1 = new Panel();
+            button3 = new Button();
             button2 = new Button();
             button1 = new Button();
             textBox1 = new TextBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             timer1 = new System.Windows.Forms.Timer(components);
-            button3 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -51,6 +51,17 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(800, 51);
             panel1.TabIndex = 0;
+            // 
+            // button3
+            // 
+            button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            button3.Location = new Point(595, 12);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 23);
+            button3.TabIndex = 3;
+            button3.Text = "Refresh";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
             // 
             // button2
             // 
@@ -71,6 +82,7 @@
             button1.TabIndex = 1;
             button1.Text = "Search";
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // textBox1
             // 
@@ -94,17 +106,6 @@
             // 
             timer1.Interval = 500;
             timer1.Tick += timer1_Tick;
-            // 
-            // button3
-            // 
-            button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button3.Location = new Point(595, 12);
-            button3.Name = "button3";
-            button3.Size = new Size(75, 23);
-            button3.TabIndex = 3;
-            button3.Text = "Refresh";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
             // 
             // Form1
             // 
