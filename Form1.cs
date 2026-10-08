@@ -10,7 +10,7 @@ namespace Estrelas
 {
     public partial class Form1 : Form
     {
-
+        CancellationTokenSource cts = new CancellationTokenSource();
         LuaState state = LuaState.Create();
         LuaValue[]? results = null;
         List<object> AllControls = new List<object>();
@@ -89,17 +89,18 @@ namespace Estrelas
 
 
                 Clean();
+                
                 state = LuaState.Create();
                 state.OpenStandardLibraries();
-
+           
                 initLuaFuncs();
                 if (isWeb)
                 {
-                    results = await state.DoStringAsync(path);
+                    results = await state.DoStringAsync(path,cancellationToken: cts.Token);
                 }
                 else
                 {
-                    results = await state.DoFileAsync(path);
+                    results = await state.DoFileAsync(path, cts.Token);
                 }
 
                 foreach (var cntrl in AllControls)
@@ -119,6 +120,37 @@ namespace Estrelas
                 }
 
                 timer1.Start();
+            }
+            catch (OperationCanceledException)
+            {
+                // shush
+                Debug.WriteLine("Operation was cancelled");
+                if (Path.Exists(currentAddress))
+                {
+                    try
+                    {
+              
+                        InitSite(currentAddress, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error loading site!");
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                   
+
+                        InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error loading site!");
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -321,12 +353,14 @@ namespace Estrelas
                     if (context.GetArgument<bool>(1))
                     {
                         Clean();
+                        currentAddress = adr;
                         InitSite(new HttpClient().GetStringAsync(adr).Result, true);
 
                     }
                     else
                     {
                         Clean();
+                        currentAddress = adr;
                         InitSite(adr, false);
 
                     }
@@ -336,9 +370,79 @@ namespace Estrelas
                 state.Environment["current_address"] = currentAddress;
 
                 //
-                // -- UI creation --
+                // -- HTTP --
                 //
 
+                state.Environment["http_get"] = new LuaFunction(async (context, ct) =>
+                {
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
+           
+
+
+
+                    return context.Return(client.GetStringAsync(context.GetArgument<string>(0)).Result);
+                });
+                state.Environment["http_post"] = new LuaFunction(async (context, ct) =>
+                {
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
+
+
+                    var content = new StringContent(context.GetArgument<string>(1), System.Text.Encoding.UTF8, "application/json");
+
+
+                    return context.Return(client.PostAsync(context.GetArgument<string>(0), content).Result.ToString());
+                });
+                //
+                // -- UI controls --
+                //
+
+                state.Environment["remove_all"] = new LuaFunction(async (context, ct) =>
+                {
+
+                    Lbuttons.Clear();
+                    Llabels.Clear();
+                    LtxtInputs.Clear();
+                    AllControls.Clear();
+                    flowLayoutPanel1.Controls.Clear();
+
+
+                    return context.Return();
+                });
+
+                state.Environment["remove_btn"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LuaButton>(0);
+                    Lbuttons.Remove(btn);
+                    AllControls.Remove(btn);
+                    flowLayoutPanel1.Controls.Remove(btn.btn);
+
+
+                    return context.Return();
+                });
+
+                state.Environment["remove_label"] = new LuaFunction(async (context, ct) =>
+                {
+                    var lbl = context.GetArgument<LuaLabel>(0);
+                    Llabels.Remove(lbl);
+                    AllControls.Remove(lbl);
+                    flowLayoutPanel1.Controls.Remove(lbl.lbl);
+
+
+                    return context.Return();
+                });
+
+                state.Environment["remove_txtbox"] = new LuaFunction(async (context, ct) =>
+                {
+                    var txtbox = context.GetArgument<LTxtInput>(0);
+                    LtxtInputs.Remove(txtbox);
+                    AllControls.Remove(txtbox);
+                    flowLayoutPanel1.Controls.Remove(txtbox.txt);
+
+
+                    return context.Return();
+                });
                 state.Environment["create_button"] = new LuaFunction(async (context, ct) =>
                 {
                     var s2 = context.GetArgument<string>(0);
@@ -503,6 +607,7 @@ namespace Estrelas
                 flowLayoutPanel1.Controls.Add(label);
                 Debug.WriteLine($"Created Label {h1.name} pt: {label.Font.Size}");
             }
+
             catch (Exception ex)
             {
                 MessageBox.Show("Error interacting/creating label");
@@ -622,14 +727,50 @@ namespace Estrelas
         }
 
 
-        public void Clean()
+        public async Task Clean()
         {
+
             timer1.Stop();
             AllControls.Clear();
             Llabels.Clear();
-            state = null;
             Lbuttons.Clear();
+            LtxtInputs.Clear();
+            foreach (Control control in flowLayoutPanel1.Controls)
+            {
+                control.Dispose();
+            }
+            foreach (var cntrl in AllControls)
+            {
+                if (cntrl is LuaButton)
+                {
+                    var btn = (LuaButton)cntrl;
+                    btn.btn.Dispose();
+                }
+                else if (cntrl is LuaLabel)
+                {
+                    var lbl = (LuaLabel)cntrl;
+                    lbl.lbl.Dispose();
+                }
+                else if (cntrl is LTxtInput)
+                {
+                    var txt = (LTxtInput)cntrl;
+                    txt.txt.Dispose();
+                }
+            }
+            if (state != null)
+            {
+                cts.Cancel();
+                state.Dispose();
+                state = null;
+                cts.Dispose();
+                cts = new CancellationTokenSource();
+            }
             results = null;
+           
+
+           
+
+
             flowLayoutPanel1.Controls.Clear();
         }
 
@@ -643,6 +784,7 @@ namespace Estrelas
                 try
                 {
                     Clean();
+                     
                     InitSite(currentAddress, false);
                 }
                 catch (Exception ex)
@@ -655,6 +797,7 @@ namespace Estrelas
                 try
                 {
                     Clean();
+                     
                     InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                 }
                 catch (Exception ex)
@@ -675,6 +818,7 @@ namespace Estrelas
                     try
                     {
                         Clean();
+                         
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
@@ -687,6 +831,7 @@ namespace Estrelas
                     try
                     {
                         Clean();
+                         
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
                     catch (Exception ex)
@@ -706,6 +851,15 @@ namespace Estrelas
         private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+      
+            Clean();
+         
+            currentAddress = "https://bwe.aquaweb.cc/another.lua";
+            InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
         }
     }
 }
