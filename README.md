@@ -52,42 +52,6 @@ Estrelas still uses the HTTP/HTTPS protocols, so no need for rewriting hosting s
 ### [Example Script](https://bwe.aquaweb.cc/test.lua/)
 
 ```lua
-abutton = buttongay
--- creates a variable called abutton that refers to the button with the id gay (the button id part is my doing and not a part of standard Lua)
-bbutton = buttonjay
--- same as before but with the id jay
-g = 0
--- creates a variable with the value 0
-
-function btngay ()
--- defines a function which will be called when button gay is clicked
-    print("Fuck me")
--- prints fuck me to the console
-    g = g + 1
--- sets g to g + 1
-    abutton.name = tostring(g)
--- changes the text on the abutton to the g variable
-end
--- ends the function definition
-
-function btnjay ()
--- defines a function which will be called when button jay is clicked
-    print("KILL ME")
--- prints KILL ME to the console
-    g = g + 1
--- sets g to g + 1
-    abutton.name = tostring(g)
--- changes the text on the abutton to the g variable
-    bbutton.name = "WOW I HAVE BEEN CLICKED"
--- changes the text on the bbutton to WOW I HAVE BEEN CLICKED
-    bbutton.width = 5000
--- sets the width of the bbuton to 5000 pixels
-end
--- ends the function definition
-
-```
-
-```lua
 create_textbox("nothin", "bum", 12)
 
 create_button("scroll", "scrl", 0 , 0)
