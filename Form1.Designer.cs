@@ -71,7 +71,7 @@
             button2.Name = "button2";
             button2.Size = new Size(112, 23);
             button2.TabIndex = 2;
-            button2.Text = "Open folder";
+            button2.Text = "Open file";
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
