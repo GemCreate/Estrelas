@@ -1,0 +1,117 @@
+# .github/workflows/dev-build.yml
+#
+# On every push to master:
+#   1. Works out the next dev version from existing v0.X.Y-dev tags
+#   2. Builds a self-contained single-file Estrelas.exe with that version stamped in
+#   3. Publishes it as a GitHub *pre-release* (never marked "Latest")
+#
+# Versioning:
+#   - Normal commit          -> patch bump   (v0.0.4-dev -> v0.0.5-dev)
+#   - "[minor]" in message   -> minor bump   (v0.0.5-dev -> v0.1.0-dev)
+#   - Major is hard-coded to 0, so it can never reach v1.0.0.
+#
+# No JavaScript/TypeScript actions are used (actions/checkout, setup-dotnet etc.
+# are Node-based). Everything is plain PowerShell, git, the gh CLI and dotnet.
+
+name: Dev Build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Runs one at a time so two pushes can't grab the same version number.
+concurrency:
+  group: dev-build
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - name: Checkout
+        run: |
+          gh repo clone $env:GITHUB_REPOSITORY . -- --quiet
+          git checkout --quiet $env:GITHUB_SHA
+          git fetch --tags --force --quiet
+
+      - name: Compute next dev version
+        id: version
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          $latest = git tag --list 'v0.*-dev' |
+            ForEach-Object {
+              if ($_ -match '^v0\.(\d+)\.(\d+)-dev$') {
+                [version]::new(0, [int]$Matches[1], [int]$Matches[2])
+              }
+            } |
+            Sort-Object -Descending |
+            Select-Object -First 1
+
+          if (-not $latest) { $latest = [version]::new(0, 0, 0) }
+
+          if ($env:COMMIT_MSG -match '\[minor\]') {
+            $next = [version]::new(0, $latest.Minor + 1, 0)
+          } else {
+            $next = [version]::new(0, $latest.Minor, $latest.Build + 1)
+          }
+
+          $prefix = "0.$($next.Minor).$($next.Build)"
+          Add-Content $env:GITHUB_OUTPUT "prefix=$prefix"
+          Add-Content $env:GITHUB_OUTPUT "tag=v$prefix-dev"
+          Write-Host "Previous: v$latest-dev  ->  Next: v$prefix-dev"
+
+      - name: Install .NET 10 SDK
+        run: |
+          $dir = "$env:RUNNER_TEMP\dotnet"
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile "$env:RUNNER_TEMP\dotnet-install.ps1"
+          & "$env:RUNNER_TEMP\dotnet-install.ps1" -Channel 10.0 -InstallDir $dir
+          Add-Content $env:GITHUB_PATH $dir
+          Add-Content $env:GITHUB_ENV "DOTNET_ROOT=$dir"
+
+      - name: Publish
+        run: |
+          dotnet publish Estrelas.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:VersionPrefix=${{ steps.version.outputs.prefix }} `
+            -p:VersionSuffix=dev `
+            -p:SourceRevisionId=$env:GITHUB_SHA `
+            -o publish
+
+      - name: Package
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          Compress-Archive -Path publish\* -DestinationPath "Estrelas-$tag-win-x64.zip"
+
+      - name: Create dev pre-release
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          Set-Content notes.md "Automated dev build of $env:GITHUB_SHA`n`n$env:COMMIT_MSG"
+
+          gh release create $tag "Estrelas-$tag-win-x64.zip" `
+            --repo $env:GITHUB_REPOSITORY `
+            --target $env:GITHUB_SHA `
+            --title $tag `
+            --notes-file notes.md `
+            --prerelease `
+            --latest=false
