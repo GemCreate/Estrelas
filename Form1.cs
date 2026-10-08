@@ -52,7 +52,7 @@ namespace Estrelas
                     }
                 }
             }
-           
+
 
         }
 
@@ -64,7 +64,7 @@ namespace Estrelas
             {
                 if (File.Exists(dialog.FileName))
                 {
-                
+
                     InitSite(dialog.FileName, false);
                     currentAddress = dialog.FileName;
                 }
@@ -101,7 +101,7 @@ namespace Estrelas
                 {
                     results = await state.DoFileAsync(path);
                 }
-              
+
                 foreach (var cntrl in AllControls)
                 {
                     if (cntrl is LuaButton)
@@ -138,7 +138,7 @@ namespace Estrelas
                 {
                     var sec = context.GetArgument<double>(0);
                     Debug.WriteLine("initiating wait " + sec.ToString());
-                    
+
                     await Task.Delay(TimeSpan.FromSeconds(sec));
                     return context.Return();
                 });
@@ -170,7 +170,7 @@ namespace Estrelas
                 });
                 state.Environment["scroll_down"] = new LuaFunction(async (context, ct) =>
                 {
-                 
+
                     Debug.WriteLine("initiating scroll ");
                     flowLayoutPanel1.VerticalScroll.Value = flowLayoutPanel1.VerticalScroll.Maximum;
                     return context.Return();
@@ -328,7 +328,7 @@ namespace Estrelas
                     {
                         Clean();
                         InitSite(adr, false);
-                       
+
                     }
                     return context.Return();
                 });
@@ -636,7 +636,7 @@ namespace Estrelas
 
         private void button3_Click(object sender, EventArgs e)
         {
-        
+
 
             if (Path.Exists(currentAddress))
             {
@@ -668,19 +668,20 @@ namespace Estrelas
         {
             if (textBox1.Text != "")
             {
-              currentAddress = textBox1.Text;
+                currentAddress = textBox1.Text;
 
                 if (Path.Exists(currentAddress))
                 {
-                    try { 
-                    Clean();
-                    InitSite(currentAddress, false);
-                      }
+                    try
+                    {
+                        Clean();
+                        InitSite(currentAddress, false);
+                    }
                     catch (Exception ex)
                     {
-                    MessageBox.Show("Error loading site!");
-                     }
-            }
+                        MessageBox.Show("Error loading site!");
+                    }
+                }
                 else
                 {
                     try
@@ -693,13 +694,18 @@ namespace Estrelas
                         MessageBox.Show("Error loading site!");
                     }
                 }
-               
+
 
             }
             else
             {
                 MessageBox.Show("Please enter a valid path!");
             }
+        }
+
+        private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             panel1 = new Panel();
             button3 = new Button();
             button2 = new Button();
@@ -101,6 +102,7 @@
             flowLayoutPanel1.Size = new Size(800, 399);
             flowLayoutPanel1.TabIndex = 1;
             flowLayoutPanel1.WrapContents = false;
+            flowLayoutPanel1.Paint += flowLayoutPanel1_Paint;
             // 
             // timer1
             // 
@@ -114,6 +116,7 @@
             ClientSize = new Size(800, 450);
             Controls.Add(flowLayoutPanel1);
             Controls.Add(panel1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             Text = "Estrelas";
             panel1.ResumeLayout(false);
