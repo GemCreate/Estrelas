@@ -21,7 +21,7 @@ namespace Estrelas
 
         string currentAddress = "";
 
-        public  Form1(string address)
+        public Form1(string address)
         {
             InitializeComponent();
             if (address != "")
@@ -93,45 +93,45 @@ namespace Estrelas
                 await Clean();
                 state = LuaState.Create();
                 state.OpenStandardLibraries();
-           
+
                 initLuaFuncs();
                 if (isWeb)
                 {
-                    results = await state.DoStringAsync(path,cancellationToken: cts.Token);
+                    results = await state.DoStringAsync(path, cancellationToken: cts.Token);
                 }
                 else
                 {
                     results = await state.DoFileAsync(path, cts.Token);
                 }
 
-                foreach (var cntrl in AllControls)
-                {
-                    if (cntrl is LuaButton)
-                    {
-                        //    var btn = (LuaButton)cntrl;
-                        //    Debug.WriteLine($"About to create button {btn.name}");
-                        //    createButton(btn);
-                    }
-                    else if (cntrl is LuaLabel)
-                    {
-                        //var lbl = (LuaLabel)cntrl;
-                        //Debug.WriteLine($"About to create label {lbl.name}");
-                        //createLabel(lbl);
-                    }
-                }
+                //foreach (var cntrl in AllControls)
+                //{
+                //    if (cntrl is LuaButton)
+                //    {
+                //        //    var btn = (LuaButton)cntrl;
+                //        //    Debug.WriteLine($"About to create button {btn.name}");
+                //        //    createButton(btn);
+                //    }
+                //    else if (cntrl is LuaLabel)
+                //    {
+                //        //var lbl = (LuaLabel)cntrl;
+                //        //Debug.WriteLine($"About to create label {lbl.name}");
+                //        //createLabel(lbl);
+                //    }
+                //}
 
                 timer1.Start();
             }
             catch (OperationCanceledException)
             {
                 // shush
-              
+
                 Debug.WriteLine("Operation was cancelled");
                 if (Path.Exists(currentAddress))
                 {
                     try
                     {
-              
+
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
@@ -143,7 +143,7 @@ namespace Estrelas
                 {
                     try
                     {
-                   
+
 
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
@@ -160,7 +160,7 @@ namespace Estrelas
                 {
                     MessageBox.Show("Sorry there seems to be something broken with this website! \n\n" + ex.Message);
                 }
-               
+
             }
         }
 
@@ -169,19 +169,19 @@ namespace Estrelas
             await Task.Delay(100);
             if (e)
             {
-            
+
                 currentAddress = adr;
                 InitSite(new HttpClient().GetStringAsync(adr).Result, true);
 
             }
             else
             {
-              
+
                 currentAddress = adr;
                 InitSite(adr, false);
 
             }
-        
+
         }
 
         private async void initLuaFuncs()
@@ -400,7 +400,7 @@ namespace Estrelas
                 }
                 catch (NullReferenceException ex)
                 {
-                 
+
                 }
                 state.Environment["current_address"] = currentAddress;
 
@@ -412,7 +412,7 @@ namespace Estrelas
                 {
                     HttpClient client = new HttpClient();
                     client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
-           
+
 
 
 
@@ -490,9 +490,11 @@ namespace Estrelas
                     {
                         id = null;
                     }
-                    var width = context.GetArgument<int>(2);
-                    var height = context.GetArgument<int>(3);
-                    LuaButton lb = new LuaButton(s2, id, width, height);
+                    var fontScale = context.GetArgument<int>(2);
+                    var width = context.GetArgument<int>(3);
+                    var height = context.GetArgument<int>(4);
+
+                    LuaButton lb = new LuaButton(s2, id, fontScale, width, height);
                     state.Environment[$"button{id}"] = lb;
                     AllControls.Add(lb);
                     Lbuttons.Add(lb);
@@ -536,7 +538,9 @@ namespace Estrelas
                     }
 
                     int fnt = context.GetArgument<int>(2);
-                    LTxtInput lbl = new LTxtInput(s2, id, fnt);
+                    int width = context.GetArgument<int>(3);
+                    int height = context.GetArgument<int>(4);
+                    LTxtInput lbl = new LTxtInput(s2, id, fnt, width, height);
                     state.Environment[$"textbox{id}"] = lbl;
                     AllControls.Add(lbl);
                     LtxtInputs.Add(lbl);
@@ -544,9 +548,17 @@ namespace Estrelas
                     return context.Return();
                 });
             }
+            catch (LuaCompileException ex)
+            {
+                MessageBox.Show("Lua compile error! \n\n" + ex.Message);
+            }
+            catch (LuaRuntimeException ex)
+            {
+                MessageBox.Show("Lua error running this website! \n\n" + ex.Message);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show("Lua error within website!");
+                MessageBox.Show("Lua error within website! \n\n" + ex.Message);
             }
 
         }
@@ -556,10 +568,15 @@ namespace Estrelas
             {
                 Button button = new Button();
                 button.Text = buton.name;
+                if (buton.fontScale != 0)
+                {
+                    Font fnt = new Font(button.Font.FontFamily, buton.fontScale, button.Font.Style);
+                    button.Font = fnt;
+                }
                 Size a = TextRenderer.MeasureText(buton.name, button.Font);
                 button.Width = a.Width + 10;
                 button.Height = a.Height + 10;
-
+                buton.fontScale = (int)button.Font.Size;
                 if (buton.width != 0)
                 {
                     button.Width = buton.width;
@@ -584,7 +601,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                       
+
                     }
                 };
                 button.MouseHover += async (e, s) =>
@@ -665,9 +682,28 @@ namespace Estrelas
                     Font fnt = new Font(textBox.Font.FontFamily, h1.fontScale, textBox.Font.Style);
                     textBox.Font = fnt;
                 }
+
                 Size a = TextRenderer.MeasureText(h1.name, textBox.Font);
-                textBox.Width = a.Width + 10;
-                textBox.Height = a.Height + 10;
+                if (h1.width != 0)
+                {
+                    textBox.Width = h1.width;
+                }
+                else
+                {
+                    textBox.Width = a.Width + 10;
+                }
+
+                if (h1.height != 0)
+                {
+                    textBox.Height = h1.height;
+                }
+                else
+                {
+                    textBox.Height = a.Height + 10;
+                }
+                a.Height = textBox.Height;
+                a.Width = textBox.Width;
+
                 h1.fontScale = (int)textBox.Font.Size;
                 textBox.TextChanged += async (e, s) =>
                 {
@@ -807,9 +843,9 @@ namespace Estrelas
                 cts = new CancellationTokenSource();
             }
             results = null;
-           
 
-           
+
+
 
 
             flowLayoutPanel1.Controls.Clear();
@@ -825,7 +861,7 @@ namespace Estrelas
                 try
                 {
                     Clean();
-                     
+
                     InitSite(currentAddress, false);
                 }
                 catch (Exception ex)
@@ -838,7 +874,7 @@ namespace Estrelas
                 try
                 {
                     Clean();
-                     
+
                     InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                 }
                 catch (Exception ex)
@@ -859,7 +895,7 @@ namespace Estrelas
                     try
                     {
                         Clean();
-                         
+
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
@@ -872,7 +908,7 @@ namespace Estrelas
                     try
                     {
                         Clean();
-                         
+
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
                     catch (Exception ex)
@@ -896,11 +932,26 @@ namespace Estrelas
 
         private async void button4_Click(object sender, EventArgs e)
         {
-      
-           await Clean();
-         
+
+            await Clean();
+
             currentAddress = "https://bwe.aquaweb.cc/another.lua";
             InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
+        }
+
+        private void Form1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void splitter1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+
+        }
+
+        private void splitter1_SplitterMoved_1(object sender, SplitterEventArgs e)
+        {
+
         }
     }
 }

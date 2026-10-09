@@ -42,7 +42,8 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.FromArgb(64, 64, 64);
+            panel1.BackColor = Color.FromArgb(0, 64, 64);
+            panel1.BorderStyle = BorderStyle.FixedSingle;
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button2);
             panel1.Controls.Add(button1);
@@ -56,7 +57,7 @@
             // button3
             // 
             button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button3.Location = new Point(595, 12);
+            button3.Location = new Point(593, 12);
             button3.Name = "button3";
             button3.Size = new Size(75, 23);
             button3.TabIndex = 3;
@@ -67,7 +68,7 @@
             // button2
             // 
             button2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button2.Location = new Point(676, 12);
+            button2.Location = new Point(674, 12);
             button2.Name = "button2";
             button2.Size = new Size(112, 23);
             button2.TabIndex = 2;
@@ -87,6 +88,8 @@
             // 
             // textBox1
             // 
+            textBox1.BackColor = SystemColors.MenuText;
+            textBox1.ForeColor = Color.Teal;
             textBox1.Location = new Point(12, 11);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(368, 23);
@@ -95,6 +98,7 @@
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoScroll = true;
+            flowLayoutPanel1.BackColor = Color.Black;
             flowLayoutPanel1.Dock = DockStyle.Fill;
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(0, 51);
@@ -117,8 +121,10 @@
             Controls.Add(flowLayoutPanel1);
             Controls.Add(panel1);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MinimumSize = new Size(816, 489);
             Name = "Form1";
             Text = "Estrelas";
+            Paint += Form1_Paint;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             ResumeLayout(false);
