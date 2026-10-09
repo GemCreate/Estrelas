@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Formats.Nrbf;
 using System.Reflection.Emit;
 using System.Xml.Linq;
+using static Lua.CodeAnalysis.Syntax.DisplayStringSyntaxVisitor;
 using Label = System.Windows.Forms.Label;
 
 namespace Estrelas
@@ -20,7 +21,7 @@ namespace Estrelas
 
         string currentAddress = "";
 
-        public Form1(string address)
+        public  Form1(string address)
         {
             InitializeComponent();
             if (address != "")
@@ -88,8 +89,8 @@ namespace Estrelas
                 textBox1.Text = currentAddress;
 
 
-                Clean();
-                
+                // Clean();
+                await Clean();
                 state = LuaState.Create();
                 state.OpenStandardLibraries();
            
@@ -124,6 +125,7 @@ namespace Estrelas
             catch (OperationCanceledException)
             {
                 // shush
+              
                 Debug.WriteLine("Operation was cancelled");
                 if (Path.Exists(currentAddress))
                 {
@@ -154,8 +156,32 @@ namespace Estrelas
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Sorry there seems to be something broken with this website! \n\n" + ex.Message);
+                if (!ex.Message.StartsWith("This state is running!"))
+                {
+                    MessageBox.Show("Sorry there seems to be something broken with this website! \n\n" + ex.Message);
+                }
+               
             }
+        }
+
+        async Task BLYAT(bool e, string adr)
+        {
+            await Task.Delay(100);
+            if (e)
+            {
+            
+                currentAddress = adr;
+                InitSite(new HttpClient().GetStringAsync(adr).Result, true);
+
+            }
+            else
+            {
+              
+                currentAddress = adr;
+                InitSite(adr, false);
+
+            }
+        
         }
 
         private async void initLuaFuncs()
@@ -347,26 +373,35 @@ namespace Estrelas
                 // -- WEB --
                 //
 
-                state.Environment["redirect"] = new LuaFunction(async (context, ct) =>
+                try
                 {
-                    var adr = context.GetArgument<string>(0);
-                    if (context.GetArgument<bool>(1))
+                    state.Environment["redirect"] = new LuaFunction(async (context, ct) =>
                     {
-                        Clean();
-                        currentAddress = adr;
-                        InitSite(new HttpClient().GetStringAsync(adr).Result, true);
+                        var adr = context.GetArgument<string>(0);
+                        BLYAT(context.GetArgument<bool>(1), adr);
+                        //if (context.GetArgument<bool>(1))
+                        //{
+                        //    Clean();
+                        //    currentAddress = adr;
+                        //    InitSite(new HttpClient().GetStringAsync(adr).Result, true);
 
-                    }
-                    else
-                    {
-                        Clean();
-                        currentAddress = adr;
-                        InitSite(adr, false);
+                        //}
+                        //else
+                        //{
+                        //    Clean();
+                        //    currentAddress = adr;
+                        //    InitSite(adr, false);
 
-                    }
-                    return context.Return();
-                });
+                        //}
 
+
+                        return context.Return("blin");
+                    });
+                }
+                catch (NullReferenceException ex)
+                {
+                 
+                }
                 state.Environment["current_address"] = currentAddress;
 
                 //
@@ -539,11 +574,17 @@ namespace Estrelas
                 button.Click += async (e, s) =>
                 {
                     var funct = state.Environment[$"btn{buton.id}"];
-
-                    if (funct.Type == LuaValueType.Function)
+                    try
                     {
-                        var ret = await state.CallAsync(funct, []);
+                        if (funct.Type == LuaValueType.Function)
+                        {
+                            var ret = await state.CallAsync(funct, []);
 
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                       
                     }
                 };
                 button.MouseHover += async (e, s) =>
@@ -853,10 +894,10 @@ namespace Estrelas
 
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private async void button4_Click(object sender, EventArgs e)
         {
       
-            Clean();
+           await Clean();
          
             currentAddress = "https://bwe.aquaweb.cc/another.lua";
             InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
