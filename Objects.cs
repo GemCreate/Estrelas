@@ -40,6 +40,9 @@ namespace Estrelas
         [LuaMember("height")]
         public int height { get; set; } = 0;
 
+        [LuaMember("visible")]
+        public bool visible { get; set; } = true;
+
         public Button btn { get; set; }
 
     }
@@ -70,7 +73,8 @@ namespace Estrelas
         public int fontScale { get; set; } = 0;
 
 
-
+        [LuaMember("visible")]
+        public bool visible { get; set; } = true;
 
         public Label lbl { get; set; }
 
@@ -110,11 +114,36 @@ namespace Estrelas
         [LuaMember("height")]
         public int height { get; set; } = 0;
 
-
+        [LuaMember("visible")]
+        public bool visible { get; set; } = true;
         public TextBox txt { get; set; }
 
     }
 
+    [LuaObject]
+    public partial class LDivider
+    {
 
+        public LDivider( string? _id)
+        {
+       
+            this.id = _id;
+ 
+
+        }
+
+
+
+
+        [LuaMember("id")]
+        public string? id { get; set; } = "";
+
+        [LuaMember("visible")]
+        public bool visible { get; set; } = true;
+
+
+        public PictureBox pix { get; set; }
+
+    }
 
 }

@@ -18,12 +18,15 @@ namespace Estrelas
         List<LuaButton> Lbuttons = new List<LuaButton>();
         List<LuaLabel> Llabels = new List<LuaLabel>();
         List<LTxtInput> LtxtInputs = new List<LTxtInput>();
+        List<LDivider> LDividers = new List<LDivider>();
 
         string currentAddress = "";
 
         public Form1(string address)
         {
             InitializeComponent();
+            timer1.Stop();
+            timer2.Stop();
             if (address != "")
             {
                 textBox1.Text = address;
@@ -37,7 +40,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
                 else
@@ -49,7 +52,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("       ! \n\n" + ex.Message);
                     }
                 }
             }
@@ -87,6 +90,8 @@ namespace Estrelas
             try
             {
                 textBox1.Text = currentAddress;
+                timer1.Start();
+                timer2.Start();
 
 
                 // Clean();
@@ -120,7 +125,11 @@ namespace Estrelas
                 //    }
                 //}
 
-                timer1.Start();
+
+            }
+            catch (LuaRuntimeException ex)
+            {
+                MessageBox.Show("Lua error running this website! \n\n" + ex.Message);
             }
             catch (OperationCanceledException)
             {
@@ -136,7 +145,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
                 else
@@ -149,7 +158,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
 
@@ -215,6 +224,26 @@ namespace Estrelas
                     return context.Return();
                 });
 
+                //
+                // -- Timers --
+                //
+
+                state.Environment["timer_state"] = true;
+
+                state.Environment["timer_stop"] = new LuaFunction(async (context, ct) =>
+                {
+                  
+                    timer2.Stop();
+                    state.Environment["timer_state"] = false;
+                    return context.Return();
+                });
+                state.Environment["timer_start"] = new LuaFunction(async (context, ct) =>
+                {
+
+                    timer2.Start();
+                    state.Environment["timer_state"] = true;
+                    return context.Return();
+                });
                 //
                 // -- Scroll --
                 //
@@ -429,6 +458,17 @@ namespace Estrelas
 
                     return context.Return(client.PostAsync(context.GetArgument<string>(0), content).Result.ToString());
                 });
+
+                //
+                // -- Screen Info --
+                //
+
+                state.Environment["screen_width"] = Screen.PrimaryScreen.Bounds.Width;
+                state.Environment["screen_height"] = Screen.PrimaryScreen.Bounds.Height;
+                state.Environment["window_width"] = this.Width;
+                state.Environment["window_height"] = this.Height;
+
+
                 //
                 // -- UI controls --
                 //
@@ -545,6 +585,29 @@ namespace Estrelas
                     AllControls.Add(lbl);
                     LtxtInputs.Add(lbl);
                     createTxtInput(lbl);
+                    return context.Return();
+                });
+
+                state.Environment["create_divider"] = new LuaFunction(async (context, ct) =>
+                {
+
+                    string? id = null;
+                    try
+                    {
+                        id = context.GetArgument<string>(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        id = null;
+
+                    }
+
+                
+                    LDivider lbl = new LDivider(id);
+                    state.Environment[$"divider{id}"] = lbl;
+                    AllControls.Add(lbl);
+                    LDividers.Add(lbl);
+                    createDivider(lbl);
                     return context.Return();
                 });
             }
@@ -744,13 +807,62 @@ namespace Estrelas
                 MessageBox.Show("Error interacting/creating text box");
             }
         }
-        private void timer1_Tick(object sender, EventArgs e)
+        private async void createDivider(LDivider h1)
         {
-            Debug.WriteLine("ticking");
-            Update();
+            try
+            {
+                PictureBox label = new PictureBox();
+        
+           
+                label.Width = this.Width - 10;
+                label.Height = 2;
+                label.BackColor = Color.White;
+                label.Click += async (e, s) =>
+                {
+                    var funct = state.Environment[$"dvd{h1.id}"];
+
+                    if (funct.Type == LuaValueType.Function)
+                    {
+                        var ret = await state.CallAsync(funct, []);
+
+                    }
+                };
+                label.MouseHover += async (e, s) =>
+                {
+                    var funct = state.Environment[$"dvd{h1.id}_hover"];
+
+                    if (funct.Type == LuaValueType.Function)
+                    {
+                        var ret = await state.CallAsync(funct, []);
+
+                    }
+                };
+                h1.pix = label;
+
+                flowLayoutPanel1.Controls.Add(label);
+                Debug.WriteLine($"Created Divider {h1.id} ");
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error interacting/creating divider");
+            }
         }
-        public void Update()
+
+        private async void timer1_Tick(object sender, EventArgs e)
         {
+            //Debug.WriteLine("ticking");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+
+            //await Update();
+        }
+        public async Task Update()
+        {
+            state.Environment["window_width"] = this.Width;
+            state.Environment["window_height"] = this.Height;
             foreach (Control control in flowLayoutPanel1.Controls)
             {
                 if (control is Button)
@@ -765,6 +877,9 @@ namespace Estrelas
 
                     if (control.Height != something2.height)
                         control.Height = something2.height;
+
+                    if (control.Visible != something2.visible)
+                        control.Visible = something2.visible;
                 }
                 else if (control is Label)
                 {
@@ -781,7 +896,8 @@ namespace Estrelas
                         control.Width = a.Width + 10;
                         control.Height = a.Height + 10;
                     }
-
+                    if (control.Visible != something2.visible)
+                        control.Visible = something2.visible;
                 }
                 else if (control is TextBox)
                 {
@@ -798,7 +914,19 @@ namespace Estrelas
                         control.Width = a.Width + 10;
                         control.Height = a.Height + 10;
                     }
-
+                    if (control.Visible != something2.visible)
+                        control.Visible = something2.visible;
+                }
+                else if (control is PictureBox)
+                {
+                    var something2 = LDividers.Where(x => x.pix == control).FirstOrDefault();
+                    if (something2 != null)
+                    {
+                        control.Width = this.Width - 105;
+                        if (control.Visible != something2.visible)
+                            control.Visible = something2.visible;
+                    }
+                   
                 }
             }
         }
@@ -866,7 +994,7 @@ namespace Estrelas
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading site!");
+                    MessageBox.Show("Error loading site! \n\n" + ex.Message);
                 }
             }
             else
@@ -879,7 +1007,7 @@ namespace Estrelas
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading site!");
+                    MessageBox.Show("Error loading site!  \n\n" + ex.Message);
                 }
             }
         }
@@ -900,7 +1028,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
                 else
@@ -913,7 +1041,7 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site!");
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
 
@@ -921,7 +1049,7 @@ namespace Estrelas
             }
             else
             {
-                MessageBox.Show("Please enter a valid path!");
+                MessageBox.Show("Please enter a valid path! ");
             }
         }
 
@@ -952,6 +1080,17 @@ namespace Estrelas
         private void splitter1_SplitterMoved_1(object sender, SplitterEventArgs e)
         {
 
+        }
+
+        private async void timer2_Tick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("ticking");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+            //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
+
+            await Update();
         }
     }
 }

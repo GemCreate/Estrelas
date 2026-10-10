@@ -37,6 +37,7 @@
             textBox1 = new TextBox();
             flowLayoutPanel1 = new FlowLayoutPanel();
             timer1 = new System.Windows.Forms.Timer(components);
+            timer2 = new System.Windows.Forms.Timer(components);
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -98,7 +99,7 @@
             // flowLayoutPanel1
             // 
             flowLayoutPanel1.AutoScroll = true;
-            flowLayoutPanel1.BackColor = Color.Black;
+            flowLayoutPanel1.BackColor = SystemColors.Control;
             flowLayoutPanel1.Dock = DockStyle.Fill;
             flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanel1.Location = new Point(0, 51);
@@ -112,6 +113,12 @@
             // 
             timer1.Interval = 500;
             timer1.Tick += timer1_Tick;
+            // 
+            // timer2
+            // 
+            timer2.Enabled = true;
+            timer2.Interval = 500;
+            timer2.Tick += timer2_Tick;
             // 
             // Form1
             // 
@@ -139,5 +146,6 @@
         private FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Timer timer1;
         private Button button3;
+        private System.Windows.Forms.Timer timer2;
     }
 }

@@ -12,6 +12,9 @@ namespace Estrelas
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.SetColorMode(SystemColorMode.Dark);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(true);
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             Application.Run(new Form1(args.Length > 0 ? args[0] : ""));
         }
     }
