@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Estrelas": {
-      "commandName": "Project",
-      "commandLineArgs": "https://bwe.aquaweb.cc/estrelas.lua"
+      "commandName": "Project"
     }
   }
 }

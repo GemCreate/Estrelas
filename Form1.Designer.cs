@@ -131,6 +131,7 @@
             MinimumSize = new Size(816, 489);
             Name = "Form1";
             Text = "Estrelas";
+            Load += Form1_Load;
             Paint += Form1_Paint;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
