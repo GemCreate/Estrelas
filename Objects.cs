@@ -146,4 +146,44 @@ namespace Estrelas
 
     }
 
+
+    [LuaObject]
+    public partial class LuaImage
+    {
+
+        public LuaImage(string _img,string? _id, bool _isWeb, int _width, int _height)
+        {
+            this.img = _img;
+            this.id = _id;
+            this.isWeb = _isWeb;
+            this.width = _width;
+            this.height = _height;
+
+        }
+
+        [LuaMember("img")]
+        public string img { get; set; } = "";
+
+
+        [LuaMember("width")]
+        public int width { get; set; } = 0;
+
+        [LuaMember("height")]
+        public int height { get; set; } = 0;
+
+
+        [LuaMember("id")]
+        public string? id { get; set; } = "";
+
+        [LuaMember("is_web")]
+        public bool isWeb { get; set; } = true;
+
+        [LuaMember("visible")]
+        public bool visible { get; set; } = true;
+
+
+        public PictureBox pix { get; set; }
+
+    }
+
 }

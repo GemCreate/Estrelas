@@ -1,3 +1,5 @@
+// VERY BIG BUG FUCKED UP FIX LATER!!!!
+// BIG TO-DO !!!!!
 using Lua;
 using Lua.Standard;
 using System.Diagnostics;
@@ -19,6 +21,7 @@ namespace Estrelas
         List<LuaLabel> Llabels = new List<LuaLabel>();
         List<LTxtInput> LtxtInputs = new List<LTxtInput>();
         List<LDivider> LDividers = new List<LDivider>();
+        List<LuaImage> LImages = new List<LuaImage>();
 
         string currentAddress = "";
 
@@ -27,6 +30,7 @@ namespace Estrelas
             InitializeComponent();
             timer1.Stop();
             timer2.Stop();
+          
             if (address != "")
             {
                 textBox1.Text = address;
@@ -35,7 +39,7 @@ namespace Estrelas
                 {
                     try
                     {
-                        Clean();
+                         Clean();
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
@@ -47,19 +51,34 @@ namespace Estrelas
                 {
                     try
                     {
-                        Clean();
+                         Clean();
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("       ! \n\n" + ex.Message);
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
                     }
                 }
             }
-
+            else
+            {
+                try
+                {
+                 
+                    currentAddress = "https://bwe.aquaweb.cc/estrelas.lua";
+                    textBox1.Text = currentAddress;
+                    Clean();
+                    InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                }
+            }
 
         }
 
+    
         private void button2_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -232,7 +251,7 @@ namespace Estrelas
 
                 state.Environment["timer_stop"] = new LuaFunction(async (context, ct) =>
                 {
-                  
+
                     timer2.Stop();
                     state.Environment["timer_state"] = false;
                     return context.Return();
@@ -407,7 +426,7 @@ namespace Estrelas
                     state.Environment["redirect"] = new LuaFunction(async (context, ct) =>
                     {
                         var adr = context.GetArgument<string>(0);
-                        BLYAT(context.GetArgument<bool>(1), adr);
+                         BLYAT(context.GetArgument<bool>(1), adr);
                         //if (context.GetArgument<bool>(1))
                         //{
                         //    Clean();
@@ -481,6 +500,26 @@ namespace Estrelas
                     LtxtInputs.Clear();
                     AllControls.Clear();
                     flowLayoutPanel1.Controls.Clear();
+
+
+                    return context.Return();
+                });
+                state.Environment["remove_pix"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LuaImage>(0);
+                    LImages.Remove(btn);
+                    AllControls.Remove(btn);
+                    flowLayoutPanel1.Controls.Remove(btn.pix);
+
+
+                    return context.Return();
+                });
+                state.Environment["remove_dvd"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LDivider>(0);
+                    LDividers.Remove(btn);
+                    AllControls.Remove(btn);
+                    flowLayoutPanel1.Controls.Remove(btn.pix);
 
 
                     return context.Return();
@@ -602,12 +641,35 @@ namespace Estrelas
 
                     }
 
-                
+
                     LDivider lbl = new LDivider(id);
                     state.Environment[$"divider{id}"] = lbl;
                     AllControls.Add(lbl);
                     LDividers.Add(lbl);
                     createDivider(lbl);
+                    return context.Return();
+                });
+                state.Environment["create_picture"] = new LuaFunction(async (context, ct) =>
+                {
+
+
+                    string? id = null;
+                    try
+                    {
+                        id = context.GetArgument<string>(1);
+                    }
+                    catch (Exception ex)
+                    {
+                        id = null;
+
+                    }
+
+
+                    LuaImage lbl = new LuaImage(context.GetArgument<string>(0), id, context.GetArgument<bool>(2), context.GetArgument<int>(3), context.GetArgument<int>(4));
+                    state.Environment[$"picture{id}"] = lbl;
+                    AllControls.Add(lbl);
+                    LImages.Add(lbl);
+                    createPicture(lbl);
                     return context.Return();
                 });
             }
@@ -812,8 +874,8 @@ namespace Estrelas
             try
             {
                 PictureBox label = new PictureBox();
-        
-           
+
+
                 label.Width = this.Width - 10;
                 label.Height = 2;
                 label.BackColor = Color.White;
@@ -848,6 +910,85 @@ namespace Estrelas
                 MessageBox.Show("Error interacting/creating divider");
             }
         }
+        private async void createPicture(LuaImage h1)
+        {
+            try
+            {
+                PictureBox label = new PictureBox();
+
+                if (h1.isWeb)
+                {
+                    Thread.Sleep(100);
+                    HttpClient client = new HttpClient();
+                    var bytes = await client.GetByteArrayAsync(h1.img);
+                    using (var ms = new MemoryStream(bytes))
+                    {
+                        label.Image = Image.FromStream(ms);
+                    }
+                }
+                else
+                {
+                    label.Image = Image.FromFile(h1.img);
+                }
+
+                label.SizeMode = PictureBoxSizeMode.StretchImage;
+                if (h1.width != 0)
+                {
+                    label.Width = h1.width;
+                }
+                else
+                {
+                    label.Width = label.Image.Width;
+                }
+
+                if (h1.height != 0)
+                {
+                    label.Height = h1.height;
+                }
+                else
+                {
+                    label.Height = label.Image.Height;
+                }
+                h1.width = label.Width;
+                h1.height = label.Height;
+                label.Click += async (e, s) =>
+                {
+                    var funct = state.Environment[$"dvd{h1.id}"];
+
+                    if (funct.Type == LuaValueType.Function)
+                    {
+                        var ret = await state.CallAsync(funct, []);
+
+                    }
+                };
+                label.MouseHover += async (e, s) =>
+                {
+                    var funct = state.Environment[$"dvd{h1.id}_hover"];
+
+                    if (funct.Type == LuaValueType.Function)
+                    {
+                        var ret = await state.CallAsync(funct, []);
+
+                    }
+                };
+                h1.pix = label;
+
+                flowLayoutPanel1.Controls.Add(label);
+
+                // {
+                // Without this line, the picture ends up as the last control because of the HTTP request
+                flowLayoutPanel1.Controls.SetChildIndex(label, AllControls.IndexOf(h1));
+                // Idea by -https://github.com/Erayegeekalkann
+                // }
+
+                Debug.WriteLine($"Created picture {h1.id} ");
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error interacting/creating picture");
+            }
+        }
 
         private async void timer1_Tick(object sender, EventArgs e)
         {
@@ -865,6 +1006,7 @@ namespace Estrelas
             state.Environment["window_height"] = this.Height;
             foreach (Control control in flowLayoutPanel1.Controls)
             {
+                if (control is Button)
                 if (control is Button)
                 {
 
@@ -926,7 +1068,21 @@ namespace Estrelas
                         if (control.Visible != something2.visible)
                             control.Visible = something2.visible;
                     }
-                   
+                    else
+                    {
+                        var something3 = LImages.Where(x => x.pix == control).FirstOrDefault();
+                        if (something3 != null)
+                        {
+                            if (control.Visible != something3.visible)
+                                control.Visible = something3.visible;
+
+                            if (control.Width != something3.width)
+                                control.Width = something3.width;
+                            if (control.Height != something3.height)
+                                control.Height = something3.height;
+                        }
+                    }
+
                 }
             }
         }
@@ -934,7 +1090,7 @@ namespace Estrelas
 
         public async Task Clean()
         {
-
+            cts = new CancellationTokenSource();
             timer1.Stop();
             AllControls.Clear();
             Llabels.Clear();
@@ -980,7 +1136,7 @@ namespace Estrelas
         }
 
 
-        private void button3_Click(object sender, EventArgs e)
+        private async void button3_Click(object sender, EventArgs e)
         {
 
 
@@ -1001,7 +1157,7 @@ namespace Estrelas
             {
                 try
                 {
-                    Clean();
+                     Clean();
 
                     InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                 }
@@ -1022,7 +1178,7 @@ namespace Estrelas
                 {
                     try
                     {
-                        Clean();
+                       await Clean();
 
                         InitSite(currentAddress, false);
                     }
@@ -1035,7 +1191,7 @@ namespace Estrelas
                 {
                     try
                     {
-                        Clean();
+                        await Clean();
 
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
@@ -1091,6 +1247,11 @@ namespace Estrelas
             //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
 
             await Update();
+        }
+
+        private  void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

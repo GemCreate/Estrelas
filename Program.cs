@@ -15,7 +15,8 @@ namespace Estrelas
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(true);
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            Application.Run(new Form1(args.Length > 0 ? args[0] : ""));
+          //  Application.Run(new Form2());
+              Application.Run(new Form1(args.Length > 0 ? args[0] : ""));
         }
     }
 }
