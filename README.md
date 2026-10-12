@@ -106,3 +106,25 @@ redirect("https://bwe.aquaweb.cc/test.lua")
 - LuaCSharp
 
 Win only...
+
+## Team
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Megamer-studios">
+        <img src="https://github.com/Megamer-studios.png" width="150px;" alt="Akumarin Kukino"/><br />
+        <b>Akumarin Kukino</b>
+      </a>
+      <p>Lead programmer/Project owner</p>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Erayegeekalkann">
+        <img src="https://github.com/Erayegeekalkann.png" width="150px;" alt="Beanz"/><br />
+        <b>Beanz</b>
+      </a>
+		<p>He suggested a <a href="https://github.com/GemCreate/Estrelas/commit/81efa57398bcc5b70bce5f728ec3e537a556ab99#diff-a82de4ca15ed62a8224614571631e0eeb45054bb778bf78d81c93fd5bb696041R980">fix for a bug related to image positioning</a></p>
+    </td>
+  </tr>
+</table>
+
