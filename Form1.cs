@@ -122,12 +122,14 @@ namespace Estrelas
             try
             {
                 textBox1.Text = currentAddress;
-                timer1.Start();
-                timer2.Start();
+
 
 
                 // Clean();
                 await Clean();
+                timer1.Start();
+                timer2.Start();
+
                 state = LuaState.Create();
                 state.OpenStandardLibraries();
 
@@ -156,7 +158,7 @@ namespace Estrelas
                 //        //createLabel(lbl);
                 //    }
                 //}
-
+            
 
             }
             catch (LuaRuntimeException ex)
@@ -224,6 +226,7 @@ namespace Estrelas
             {
 
                 currentAddress = adr;
+           
                 InitSite(new HttpClient().GetStringAsync(adr).Result, true);
 
             }
@@ -231,6 +234,7 @@ namespace Estrelas
             {
 
                 currentAddress = adr;
+            
                 InitSite(adr, false);
 
             }
@@ -276,6 +280,10 @@ namespace Estrelas
 
                 state.Environment["timer_stop"] = new LuaFunction(async (context, ct) =>
                 {
+                    timer1.Stop();
+                    // Timer1 literally is unsued and for some reason does not work
+                    // even though it has the same code as timer2, but for some reason
+                    // this function does not work if timer1.stop() is removed
 
                     timer2.Stop();
                     state.Environment["timer_state"] = false;
@@ -283,6 +291,8 @@ namespace Estrelas
                 });
                 state.Environment["timer_start"] = new LuaFunction(async (context, ct) =>
                 {
+                    timer1.Start();
+                    // Same goes for here...
 
                     timer2.Start();
                     state.Environment["timer_state"] = true;
@@ -1029,60 +1039,69 @@ namespace Estrelas
         {
             state.Environment["window_width"] = this.Width;
             state.Environment["window_height"] = this.Height;
-            foreach (Control control in flowLayoutPanel1.Controls)
+            try
             {
-          
+                foreach (Control control in flowLayoutPanel1.Controls)
+                {
+
                     if (control is Button)
                     {
 
                         var something2 = Lbuttons.Where(x => x.btn == control).FirstOrDefault();
-                        if (control.Text != something2.name)
-                            control.Text = something2.name;
+                        if (something2 != null)
+                        {
+                            if (control.Text != something2.name)
+                                control.Text = something2.name;
 
-                        if (control.Width != something2.width)
-                            control.Width = something2.width;
+                            if (control.Width != something2.width)
+                                control.Width = something2.width;
 
-                        if (control.Height != something2.height)
-                            control.Height = something2.height;
+                            if (control.Height != something2.height)
+                                control.Height = something2.height;
 
-                        if (control.Visible != something2.visible)
-                            control.Visible = something2.visible;
+                            if (control.Visible != something2.visible)
+                                control.Visible = something2.visible;
+                        }
                     }
                     else if (control is Label)
                     {
 
                         var something2 = Llabels.Where(x => x.lbl == control).FirstOrDefault();
-
-                        if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+                        if (something2 != null)
                         {
+                            if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+                            {
 
-                            control.Text = something2.name;
-                            Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
-                            control.Font = fnt;
-                            Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                            control.Width = a.Width + 10;
-                            control.Height = a.Height + 10;
+                                control.Text = something2.name;
+                                Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
+                                control.Font = fnt;
+                                Size a = TextRenderer.MeasureText(something2.name, control.Font);
+                                control.Width = a.Width + 10;
+                                control.Height = a.Height + 10;
+                            }
+                            if (control.Visible != something2.visible)
+                                control.Visible = something2.visible;
                         }
-                        if (control.Visible != something2.visible)
-                            control.Visible = something2.visible;
                     }
                     else if (control is TextBox)
                     {
 
                         var something2 = LtxtInputs.Where(x => x.txt == control).FirstOrDefault();
-
-                        if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+                        if (something2 != null)
                         {
+                            if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+                            {
 
-                            control.Text = something2.name;
-                            Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
-                            control.Font = fnt;
-                            Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                            control.Width = a.Width + 10;
-                            control.Height = a.Height + 10;
+                                control.Text = something2.name;
+                                Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
+                                control.Font = fnt;
+                                Size a = TextRenderer.MeasureText(something2.name, control.Font);
+                                control.Width = a.Width + 10;
+                                control.Height = a.Height + 10;
+                            }
+                            if (control.Visible != something2.visible)
+                                control.Visible = something2.visible;
                         }
-                        if (control.Visible != something2.visible)
-                            control.Visible = something2.visible;
                     }
                     else if (control is PictureBox)
                     {
@@ -1109,6 +1128,11 @@ namespace Estrelas
                         }
 
                     }
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.WriteLine("Null reference exception in update: " + ex.Message);
             }
         }
 
