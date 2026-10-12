@@ -3,6 +3,12 @@
 
 // I think I fixed it? ^ idfk!
 
+// To-do:
+// Sounds
+// HTTP
+// Downloads
+
+
 
 using Lua;
 using Lua.Standard;
@@ -298,6 +304,7 @@ namespace Estrelas
                     state.Environment["timer_state"] = true;
                     return context.Return();
                 });
+
                 //
                 // -- Scroll --
                 //
@@ -988,7 +995,7 @@ namespace Estrelas
                 h1.height = label.Height;
                 label.Click += async (e, s) =>
                 {
-                    var funct = state.Environment[$"dvd{h1.id}"];
+                    var funct = state.Environment[$"pix{h1.id}"];
 
                     if (funct.Type == LuaValueType.Function)
                     {
@@ -998,7 +1005,7 @@ namespace Estrelas
                 };
                 label.MouseHover += async (e, s) =>
                 {
-                    var funct = state.Environment[$"dvd{h1.id}_hover"];
+                    var funct = state.Environment[$"pix{h1.id}_hover"];
 
                     if (funct.Type == LuaValueType.Function)
                     {
@@ -1043,7 +1050,7 @@ namespace Estrelas
             {
                 foreach (Control control in flowLayoutPanel1.Controls)
                 {
-
+          
                     if (control is Button)
                     {
 
