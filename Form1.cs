@@ -1,5 +1,9 @@
 // VERY BIG BUG FUCKED UP FIX LATER!!!!
 // BIG TO-DO !!!!!
+
+// I think I fixed it? ^ idfk!
+
+
 using Lua;
 using Lua.Standard;
 using System.Diagnostics;
@@ -30,7 +34,7 @@ namespace Estrelas
             InitializeComponent();
             timer1.Stop();
             timer2.Stop();
-          
+
             if (address != "")
             {
                 textBox1.Text = address;
@@ -39,24 +43,30 @@ namespace Estrelas
                 {
                     try
                     {
-                         Clean();
+                        Clean();
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        }
                     }
                 }
                 else
                 {
                     try
                     {
-                         Clean();
+                        Clean();
                         InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        }
                     }
                 }
             }
@@ -64,7 +74,7 @@ namespace Estrelas
             {
                 try
                 {
-                 
+
                     currentAddress = "https://bwe.aquaweb.cc/estrelas.lua";
                     textBox1.Text = currentAddress;
                     Clean();
@@ -72,13 +82,16 @@ namespace Estrelas
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                    if (!ex.Message.StartsWith("This state is running!"))
+                    {
+                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                    }
                 }
             }
 
         }
 
-    
+
         private void button2_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -164,7 +177,13 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            if (!ex.Message.StartsWith("This state is running!"))
+                            {
+                                MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                            }
+                        }
                     }
                 }
                 else
@@ -177,7 +196,13 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            if (!ex.Message.StartsWith("This state is running!"))
+                            {
+                                MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                            }
+                        }
                     }
                 }
 
@@ -426,7 +451,7 @@ namespace Estrelas
                     state.Environment["redirect"] = new LuaFunction(async (context, ct) =>
                     {
                         var adr = context.GetArgument<string>(0);
-                         BLYAT(context.GetArgument<bool>(1), adr);
+                        BLYAT(context.GetArgument<bool>(1), adr);
                         //if (context.GetArgument<bool>(1))
                         //{
                         //    Clean();
@@ -992,13 +1017,13 @@ namespace Estrelas
 
         private async void timer1_Tick(object sender, EventArgs e)
         {
-            //Debug.WriteLine("ticking");
+            Debug.WriteLine("ticking");
             //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
             //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
             //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
             //Debug.WriteLine("OH BOY IT'S TICKING LOOK AT ME!");
 
-            //await Update();
+            await Update();
         }
         public async Task Update()
         {
@@ -1006,118 +1031,97 @@ namespace Estrelas
             state.Environment["window_height"] = this.Height;
             foreach (Control control in flowLayoutPanel1.Controls)
             {
-                if (control is Button)
-                if (control is Button)
-                {
-
-                    var something2 = Lbuttons.Where(x => x.btn == control).FirstOrDefault();
-                    if (control.Text != something2.name)
-                        control.Text = something2.name;
-
-                    if (control.Width != something2.width)
-                        control.Width = something2.width;
-
-                    if (control.Height != something2.height)
-                        control.Height = something2.height;
-
-                    if (control.Visible != something2.visible)
-                        control.Visible = something2.visible;
-                }
-                else if (control is Label)
-                {
-
-                    var something2 = Llabels.Where(x => x.lbl == control).FirstOrDefault();
-
-                    if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+          
+                    if (control is Button)
                     {
 
-                        control.Text = something2.name;
-                        Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
-                        control.Font = fnt;
-                        Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                        control.Width = a.Width + 10;
-                        control.Height = a.Height + 10;
-                    }
-                    if (control.Visible != something2.visible)
-                        control.Visible = something2.visible;
-                }
-                else if (control is TextBox)
-                {
+                        var something2 = Lbuttons.Where(x => x.btn == control).FirstOrDefault();
+                        if (control.Text != something2.name)
+                            control.Text = something2.name;
 
-                    var something2 = LtxtInputs.Where(x => x.txt == control).FirstOrDefault();
+                        if (control.Width != something2.width)
+                            control.Width = something2.width;
 
-                    if (control.Font.Size != something2.fontScale || control.Text != something2.name)
-                    {
+                        if (control.Height != something2.height)
+                            control.Height = something2.height;
 
-                        control.Text = something2.name;
-                        Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
-                        control.Font = fnt;
-                        Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                        control.Width = a.Width + 10;
-                        control.Height = a.Height + 10;
-                    }
-                    if (control.Visible != something2.visible)
-                        control.Visible = something2.visible;
-                }
-                else if (control is PictureBox)
-                {
-                    var something2 = LDividers.Where(x => x.pix == control).FirstOrDefault();
-                    if (something2 != null)
-                    {
-                        control.Width = this.Width - 105;
                         if (control.Visible != something2.visible)
                             control.Visible = something2.visible;
                     }
-                    else
+                    else if (control is Label)
                     {
-                        var something3 = LImages.Where(x => x.pix == control).FirstOrDefault();
-                        if (something3 != null)
+
+                        var something2 = Llabels.Where(x => x.lbl == control).FirstOrDefault();
+
+                        if (control.Font.Size != something2.fontScale || control.Text != something2.name)
                         {
-                            if (control.Visible != something3.visible)
-                                control.Visible = something3.visible;
 
-                            if (control.Width != something3.width)
-                                control.Width = something3.width;
-                            if (control.Height != something3.height)
-                                control.Height = something3.height;
+                            control.Text = something2.name;
+                            Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
+                            control.Font = fnt;
+                            Size a = TextRenderer.MeasureText(something2.name, control.Font);
+                            control.Width = a.Width + 10;
+                            control.Height = a.Height + 10;
                         }
+                        if (control.Visible != something2.visible)
+                            control.Visible = something2.visible;
                     }
+                    else if (control is TextBox)
+                    {
 
-                }
+                        var something2 = LtxtInputs.Where(x => x.txt == control).FirstOrDefault();
+
+                        if (control.Font.Size != something2.fontScale || control.Text != something2.name)
+                        {
+
+                            control.Text = something2.name;
+                            Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
+                            control.Font = fnt;
+                            Size a = TextRenderer.MeasureText(something2.name, control.Font);
+                            control.Width = a.Width + 10;
+                            control.Height = a.Height + 10;
+                        }
+                        if (control.Visible != something2.visible)
+                            control.Visible = something2.visible;
+                    }
+                    else if (control is PictureBox)
+                    {
+                        var something2 = LDividers.Where(x => x.pix == control).FirstOrDefault();
+                        if (something2 != null)
+                        {
+                            control.Width = this.Width - 105;
+                            if (control.Visible != something2.visible)
+                                control.Visible = something2.visible;
+                        }
+                        else
+                        {
+                            var something3 = LImages.Where(x => x.pix == control).FirstOrDefault();
+                            if (something3 != null)
+                            {
+                                if (control.Visible != something3.visible)
+                                    control.Visible = something3.visible;
+
+                                if (control.Width != something3.width)
+                                    control.Width = something3.width;
+                                if (control.Height != something3.height)
+                                    control.Height = something3.height;
+                            }
+                        }
+
+                    }
             }
         }
 
 
         public async Task Clean()
         {
-            cts = new CancellationTokenSource();
-            timer1.Stop();
+
+            timer2.Stop();
             AllControls.Clear();
             Llabels.Clear();
             Lbuttons.Clear();
             LtxtInputs.Clear();
-            foreach (Control control in flowLayoutPanel1.Controls)
-            {
-                control.Dispose();
-            }
-            foreach (var cntrl in AllControls)
-            {
-                if (cntrl is LuaButton)
-                {
-                    var btn = (LuaButton)cntrl;
-                    btn.btn.Dispose();
-                }
-                else if (cntrl is LuaLabel)
-                {
-                    var lbl = (LuaLabel)cntrl;
-                    lbl.lbl.Dispose();
-                }
-                else if (cntrl is LTxtInput)
-                {
-                    var txt = (LTxtInput)cntrl;
-                    txt.txt.Dispose();
-                }
-            }
+          
             if (state != null)
             {
                 cts.Cancel();
@@ -1136,7 +1140,7 @@ namespace Estrelas
         }
 
 
-        private async void button3_Click(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e)
         {
 
 
@@ -1150,20 +1154,32 @@ namespace Estrelas
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                    if (!ex.Message.StartsWith("This state is running!"))
+                    {
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        }
+                    }
                 }
             }
             else
             {
                 try
                 {
-                     Clean();
+                    Clean();
 
                     InitSite(new HttpClient().GetStringAsync(currentAddress).Result, true);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error loading site!  \n\n" + ex.Message);
+                    if (!ex.Message.StartsWith("This state is running!"))
+                    {
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            MessageBox.Show("Error loading site!  \n\n" + ex.Message);
+                        }
+                    }
                 }
             }
         }
@@ -1178,13 +1194,18 @@ namespace Estrelas
                 {
                     try
                     {
-                       await Clean();
+                        await Clean();
 
                         InitSite(currentAddress, false);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                           
+                                MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                            
+                        }
                     }
                 }
                 else
@@ -1197,7 +1218,10 @@ namespace Estrelas
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        if (!ex.Message.StartsWith("This state is running!"))
+                        {
+                            MessageBox.Show("Error loading site! \n\n" + ex.Message);
+                        }
                     }
                 }
 
@@ -1249,9 +1273,73 @@ namespace Estrelas
             await Update();
         }
 
-        private  void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+            foreach (var a in AllControls)
+            {
+                if (a is LuaButton)
+                {
+                    var btn = (LuaButton)a;
+                    Console.WriteLine($"Button {btn.name} id: {btn.id} w: {btn.width} h: {btn.height} visible: {btn.visible}");
+                }
+                else if (a is LuaLabel)
+                {
+                    var lbl = (LuaLabel)a;
+                    Console.WriteLine($"Label {lbl.name} id: {lbl.id} pt: {lbl.fontScale} visible: {lbl.visible}");
+                }
+                else if (a is LTxtInput)
+                {
+                    var txt = (LTxtInput)a;
+                    Console.WriteLine($"TextBox {txt.name} id: {txt.id} pt: {txt.fontScale} visible: {txt.visible}");
+                }
+                else if (a is LDivider)
+                {
+                    var dvd = (LDivider)a;
+                    Console.WriteLine($"Divider id: {dvd.id} visible: {dvd.visible}");
+                }
+                else if (a is LuaImage)
+                {
+                    var img = (LuaImage)a;
+                    Console.WriteLine($"Image id: {img.id} w: {img.width} h: {img.height} visible: {img.visible}");
+                }
+
+
+
+
+
+
+            }
+            Console.WriteLine("Other lists");
+            foreach (var a in Lbuttons)
+            {
+                Console.WriteLine($"Button {a.name} id: {a.id} w: {a.width} h: {a.height} visible: {a.visible}");
+                a.btn.Width = 500;
+            }
+            foreach (var a in Llabels)
+            {
+                Console.WriteLine($"Label {a.name} id: {a.id} pt: {a.fontScale} visible: {a.visible}");
+                a.lbl.Width = 500;
+            }
+            foreach (var a in LtxtInputs)
+            {
+                Console.WriteLine($"TextBox {a.name} id: {a.id} pt: {a.fontScale} visible: {a.visible}");
+                a.txt.Width = 500;
+            }
+            foreach (var a in LDividers)
+            {
+                Console.WriteLine($"Divider id: {a.id} visible: {a.visible}");
+                a.pix.Width = 500;
+            }
+            foreach (var a in LImages)
+            {
+                Console.WriteLine($"Image id: {a.id} w: {a.width} h: {a.height} visible: {a.visible}");
+                a.pix.Width = 500;
+            }
         }
     }
 }
