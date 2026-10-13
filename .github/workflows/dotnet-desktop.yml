@@ -84,17 +84,29 @@ jobs:
 
       - name: Publish
         run: |
-          dotnet publish Estrelas.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained true `
+          # COMReference (WMPLib) can't be resolved by `dotnet build/publish`
+          # (MSB4803), so use Visual Studio's full-framework MSBuild instead,
+          # pointed at the .NET 10 SDK installed above.
+          $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = $env:DOTNET_ROOT
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuild = & $vswhere -latest -prerelease -products * `
+            -requires Microsoft.Component.MSBuild `
+            -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw "MSBuild.exe not found" }
+          Write-Host "Using $msbuild"
+
+          & $msbuild Estrelas.csproj -restore -t:Publish -nologo `
+            -p:Configuration=Release `
+            -p:RuntimeIdentifier=win-x64 `
+            -p:SelfContained=true `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:EnableCompressionInSingleFile=true `
             -p:VersionPrefix=${{ steps.version.outputs.prefix }} `
             -p:VersionSuffix=dev `
             -p:SourceRevisionId=$env:GITHUB_SHA `
-            -o publish
+            -p:PublishDir=publish\
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Package
         run: |
