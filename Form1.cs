@@ -344,6 +344,14 @@ namespace Estrelas
 
                     return context.Return(new Random().Next(min, max));
                 });
+                state.Environment["rand_o"] = new LuaFunction(async (context, ct) =>
+                {
+                    var e = context.GetArgument<int>(0);
+  
+                    Debug.WriteLine("initiating random " + e);
+
+                    return context.Return(new Random().Next(e));
+                });
 
                 //
                 // -- IO --
@@ -533,6 +541,103 @@ namespace Estrelas
                 //
                 // -- UI controls --
                 //
+
+                state.Environment["controls_count"] = AllControls.Count;
+                state.Environment["reorder_button"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LuaButton>(0);
+                    var index = context.GetArgument<int>(1);
+
+                    flowLayoutPanel1.Controls.SetChildIndex(btn.btn, index);
+                    AllControls.Remove(btn);
+                    Debug.WriteLine(AllControls.Count);
+                    if (index > AllControls.Count)
+                    {
+                        index = AllControls.Count;
+                    }
+                    AllControls.Insert(index, btn);
+
+
+
+
+                    return context.Return();
+                });
+                state.Environment["reorder_label"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LuaLabel>(0);
+                    var index = context.GetArgument<int>(1);
+
+                    flowLayoutPanel1.Controls.SetChildIndex(btn.lbl, index);
+                    AllControls.Remove(btn);
+                    Debug.WriteLine(AllControls.Count);
+                    if (index > AllControls.Count)
+                    {
+                        index = AllControls.Count;
+                    }
+                    AllControls.Insert(index, btn);
+
+
+
+
+                    return context.Return();
+                });
+                state.Environment["reorder_textbox"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LTxtInput>(0);
+                    var index = context.GetArgument<int>(1);
+
+                    flowLayoutPanel1.Controls.SetChildIndex(btn.txt, index);
+                    AllControls.Remove(btn);
+                    Debug.WriteLine(AllControls.Count);
+                    if (index > AllControls.Count)
+                    {
+                        index = AllControls.Count;
+                    }
+                    AllControls.Insert(index, btn);
+
+
+
+
+                    return context.Return();
+                });
+                state.Environment["reorder_divider"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LDivider>(0);
+                    var index = context.GetArgument<int>(1);
+
+                    flowLayoutPanel1.Controls.SetChildIndex(btn.pix, index);
+                    AllControls.Remove(btn);
+                    Debug.WriteLine(AllControls.Count);
+                    if (index > AllControls.Count)
+                    {
+                        index = AllControls.Count;
+                    }
+                    AllControls.Insert(index, btn);
+
+
+
+
+                    return context.Return();
+                });
+                state.Environment["reorder_picture"] = new LuaFunction(async (context, ct) =>
+                {
+                    var btn = context.GetArgument<LuaImage>(0);
+                    var index = context.GetArgument<int>(1);
+
+                    flowLayoutPanel1.Controls.SetChildIndex(btn.pix, index);
+                    AllControls.Remove(btn);
+                    Debug.WriteLine(AllControls.Count);
+                    if (index > AllControls.Count)
+                    {
+                        index = AllControls.Count;
+                    }
+                    AllControls.Insert(index, btn);
+
+
+
+
+                    return context.Return();
+                });
 
                 state.Environment["remove_all"] = new LuaFunction(async (context, ct) =>
                 {
@@ -1044,6 +1149,8 @@ namespace Estrelas
         }
         public async Task Update()
         {
+
+            state.Environment["controls_count"] = AllControls.Count;
             state.Environment["window_width"] = this.Width;
             state.Environment["window_height"] = this.Height;
             try
