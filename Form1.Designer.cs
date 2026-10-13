@@ -95,6 +95,7 @@
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(368, 23);
             textBox1.TabIndex = 0;
+            textBox1.KeyPress += textBox1_KeyPress;
             // 
             // flowLayoutPanel1
             // 
@@ -117,7 +118,6 @@
             // timer2
             // 
             timer2.Enabled = true;
-            timer2.Interval = 500;
             timer2.Tick += timer2_Tick;
             // 
             // Form1

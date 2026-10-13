@@ -4,9 +4,9 @@
 // I think I fixed it? ^ idfk!
 
 // To-do:
-// Sounds
-// HTTP
-// Downloads
+// HTTP +-
+// Multiple audio spurces
+
 
 
 
@@ -14,6 +14,7 @@ using Lua;
 using Lua.Standard;
 using System.Diagnostics;
 using System.Formats.Nrbf;
+using System.IO.Compression;
 using System.Reflection.Emit;
 using System.Xml.Linq;
 using static Lua.CodeAnalysis.Syntax.DisplayStringSyntaxVisitor;
@@ -32,7 +33,7 @@ namespace Estrelas
         List<LTxtInput> LtxtInputs = new List<LTxtInput>();
         List<LDivider> LDividers = new List<LDivider>();
         List<LuaImage> LImages = new List<LuaImage>();
-
+        private WMPLib.WindowsMediaPlayer mediaPlayer = new WMPLib.WindowsMediaPlayer();
         string currentAddress = "";
 
         public Form1(string address)
@@ -254,7 +255,7 @@ namespace Estrelas
                 //
                 // -- Misc --
                 //
-
+                state.Environment["working_direc"] = Directory.GetCurrentDirectory();
                 state.Environment["wait"] = new LuaFunction(async (context, ct) =>
                 {
                     var sec = context.GetArgument<double>(0);
@@ -278,6 +279,55 @@ namespace Estrelas
                     return context.Return();
                 });
 
+                //
+                // -- Sound --
+                //
+                state.Environment["sound_play_append"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    var isWeb = context.GetArgument<bool>(1);
+                    Debug.WriteLine("initiating play_sound " + path);
+                    if (isWeb)
+                    {
+                        HttpClient client = new HttpClient();
+                        client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
+                        byte[] bytes = await client.GetByteArrayAsync(path);
+                        string tempPath = Path.Combine(Path.GetTempPath(), $"temp_{new Random().Next(500)}sound.mp3");
+                        File.WriteAllBytes(tempPath, bytes);
+                        path = tempPath;
+                    }
+               
+                      
+                            mediaPlayer.currentPlaylist.appendItem(mediaPlayer.newMedia(path));
+
+
+                    return context.Return();
+                });
+                state.Environment["sound_play"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    var isWeb = context.GetArgument<bool>(1);
+                    Debug.WriteLine("initiating play_sound " + path);
+                    if (isWeb)
+                    {
+                        HttpClient client = new HttpClient();
+                        client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
+                        byte[] bytes = await client.GetByteArrayAsync(path);
+                        string tempPath = Path.Combine(Path.GetTempPath(), $"temp_{new Random().Next(500)}sound.mp3");
+                        File.WriteAllBytes(tempPath, bytes);
+                        path = tempPath;
+                    }
+                    mediaPlayer.URL = path;
+                    mediaPlayer.controls.play();
+
+                    return context.Return();
+                });
+                state.Environment["sound_stop"] = new LuaFunction(async (context, ct) =>
+                {   
+                    mediaPlayer.controls.stop();
+                    return context.Return();
+                });
+                state.Environment["sound_state"] = mediaPlayer.playState.ToString();
                 //
                 // -- Timers --
                 //
@@ -333,7 +383,7 @@ namespace Estrelas
                 });
 
                 //
-                // -- Misc --
+                // -- Random --
                 //
 
                 state.Environment["rand"] = new LuaFunction(async (context, ct) =>
@@ -403,6 +453,42 @@ namespace Estrelas
 
                     Debug.WriteLine("initiating make_folder " + path);
                     Directory.CreateDirectory(path);
+                    return context.Return();
+                });
+                state.Environment["zip_compress"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    var dest = context.GetArgument<string>(1);
+                    Debug.WriteLine("initiating zip_compress " + path);
+                    ZipFile.CreateFromDirectory(path, dest);
+
+                    return context.Return();
+                });
+                state.Environment["zip_decompress"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    var dest = context.GetArgument<string>(1);
+                    Debug.WriteLine("initiating zip_decompress " + path);
+                    ZipFile.ExtractToDirectory(path, dest);
+
+                    return context.Return();
+                });
+                state.Environment["file_copy"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    var dest = context.GetArgument<string>(1);
+                    Debug.WriteLine("initiating file_copy " + path);
+                    File.Copy(path, dest);
+                  
+
+
+                    return context.Return();
+                });
+                state.Environment["file_delete"] = new LuaFunction(async (context, ct) =>
+                {
+                    var path = context.GetArgument<string>(0);
+                    Debug.WriteLine("initiating file_delete " + path);
+                    File.Delete(path);
                     return context.Return();
                 });
 
@@ -526,6 +612,35 @@ namespace Estrelas
 
 
                     return context.Return(client.PostAsync(context.GetArgument<string>(0), content).Result.ToString());
+                });
+                state.Environment["download"] = new LuaFunction(async (context, ct) =>
+                {
+                    HttpClient client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("User-Agent", "Estrelas/1.0");
+                    var url = context.GetArgument<string>(0);
+                    var path = context.GetArgument<string>(1);
+                    if (Directory.Exists(Path.GetDirectoryName(path)))
+                    {
+                        byte[] bytes = await client.GetByteArrayAsync(url);
+                        File.WriteAllBytes(path, bytes);
+                    }
+                    else
+                    {
+                        if (Directory.Exists(Path.Combine( Directory.GetCurrentDirectory() , Path.GetDirectoryName(path))))
+                        {
+                           path = Path.Combine(Directory.GetCurrentDirectory(), path);
+                            byte[] bytes = await client.GetByteArrayAsync(url);
+                            File.WriteAllBytes(path, bytes);
+                        }
+                        else
+                        {
+                            path = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(path));
+                            byte[] bytes = await client.GetByteArrayAsync(url);
+                            File.WriteAllBytes(path, bytes);
+                        }
+                    }
+
+                    return context.Return();
                 });
 
                 //
@@ -1151,7 +1266,7 @@ namespace Estrelas
         }
         public async Task Update()
         {
-
+            state.Environment["sound_state"] = mediaPlayer.playState.ToString();
             state.Environment["controls_count"] = AllControls.Count;
             state.Environment["window_width"] = this.Width;
             state.Environment["window_height"] = this.Height;
@@ -1491,7 +1606,16 @@ namespace Estrelas
 
         private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-           await Clean();
+            await Clean();
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                button1_Click(sender, e);
+                e.Handled = true; // Prevents the beep sound on Enter key press
+            }
         }
     }
 }
