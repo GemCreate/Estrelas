@@ -164,7 +164,7 @@ namespace Estrelas
                 //        //createLabel(lbl);
                 //    }
                 //}
-            
+
 
             }
             catch (LuaRuntimeException ex)
@@ -232,7 +232,7 @@ namespace Estrelas
             {
 
                 currentAddress = adr;
-           
+
                 InitSite(new HttpClient().GetStringAsync(adr).Result, true);
 
             }
@@ -240,7 +240,7 @@ namespace Estrelas
             {
 
                 currentAddress = adr;
-            
+
                 InitSite(adr, false);
 
             }
@@ -347,7 +347,7 @@ namespace Estrelas
                 state.Environment["rand_o"] = new LuaFunction(async (context, ct) =>
                 {
                     var e = context.GetArgument<int>(0);
-  
+
                     Debug.WriteLine("initiating random " + e);
 
                     return context.Return(new Random().Next(e));
@@ -845,9 +845,10 @@ namespace Estrelas
                     Font fnt = new Font(button.Font.FontFamily, buton.fontScale, button.Font.Style);
                     button.Font = fnt;
                 }
-                Size a = TextRenderer.MeasureText(buton.name, button.Font);
-                button.Width = a.Width + 10;
-                button.Height = a.Height + 10;
+                //Size a = TextRenderer.MeasureText(buton.name, button.Font);
+                //button.Width = a.Width + 10;
+                //button.Height = a.Height + 10;
+                button.Size = button.GetPreferredSize(new Size(0, 0));
                 buton.fontScale = (int)button.Font.Size;
                 if (buton.width != 0)
                 {
@@ -908,9 +909,10 @@ namespace Estrelas
                     Font fnt = new Font(label.Font.FontFamily, h1.fontScale, label.Font.Style);
                     label.Font = fnt;
                 }
-                Size a = TextRenderer.MeasureText(h1.name, label.Font);
-                label.Width = a.Width + 10;
-                label.Height = a.Height + 10;
+                //Size a = TextRenderer.MeasureText(h1.name, label.Font);
+                //label.Width = a.Width + 10;
+                //label.Height = a.Height + 10;
+                label.Size = label.GetPreferredSize(new Size(0, 0));
                 h1.fontScale = (int)label.Font.Size;
                 label.Click += async (e, s) =>
                 {
@@ -955,14 +957,14 @@ namespace Estrelas
                     textBox.Font = fnt;
                 }
 
-                Size a = TextRenderer.MeasureText(h1.name, textBox.Font);
+                Size a = textBox.GetPreferredSize(new Size(0, 0));
                 if (h1.width != 0)
                 {
                     textBox.Width = h1.width;
                 }
                 else
                 {
-                    textBox.Width = a.Width + 10;
+                    textBox.Width = a.Width;
                 }
 
                 if (h1.height != 0)
@@ -971,7 +973,7 @@ namespace Estrelas
                 }
                 else
                 {
-                    textBox.Height = a.Height + 10;
+                    textBox.Height = a.Height;
                 }
                 a.Height = textBox.Height;
                 a.Width = textBox.Width;
@@ -1157,15 +1159,22 @@ namespace Estrelas
             {
                 foreach (Control control in flowLayoutPanel1.Controls)
                 {
-          
+
                     if (control is Button)
                     {
 
                         var something2 = Lbuttons.Where(x => x.btn == control).FirstOrDefault();
                         if (something2 != null)
                         {
-                            if (control.Text != something2.name)
+                            if (control.Text != something2.name || control.Font.Size != something2.fontScale)
+                            {
                                 control.Text = something2.name;
+                                control.Size = control.GetPreferredSize(new Size(0, 0));
+                                something2.width = control.Width;
+                                something2.height = control.Height;
+                            }
+
+
 
                             if (control.Width != something2.width)
                                 control.Width = something2.width;
@@ -1189,9 +1198,9 @@ namespace Estrelas
                                 control.Text = something2.name;
                                 Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
                                 control.Font = fnt;
-                                Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                                control.Width = a.Width + 10;
-                                control.Height = a.Height + 10;
+                                Size a = control.GetPreferredSize(new Size(0, 0));
+                                control.Width = a.Width;
+                                control.Height = a.Height;
                             }
                             if (control.Visible != something2.visible)
                                 control.Visible = something2.visible;
@@ -1209,9 +1218,9 @@ namespace Estrelas
                                 control.Text = something2.name;
                                 Font fnt = new Font(control.Font.FontFamily, something2.fontScale, control.Font.Style);
                                 control.Font = fnt;
-                                Size a = TextRenderer.MeasureText(something2.name, control.Font);
-                                control.Width = a.Width + 10;
-                                control.Height = a.Height + 10;
+                                Size a = control.GetPreferredSize(new Size(0, 0));
+                                control.Width = a.Width;
+                                control.Height = a.Height;
                             }
                             if (control.Visible != something2.visible)
                                 control.Visible = something2.visible;
@@ -1259,7 +1268,7 @@ namespace Estrelas
             Llabels.Clear();
             Lbuttons.Clear();
             LtxtInputs.Clear();
-          
+
             if (state != null)
             {
                 cts.Cancel();
@@ -1340,9 +1349,9 @@ namespace Estrelas
                     {
                         if (!ex.Message.StartsWith("This state is running!"))
                         {
-                           
-                                MessageBox.Show("Error loading site! \n\n" + ex.Message);
-                            
+
+                            MessageBox.Show("Error loading site! \n\n" + ex.Message);
+
                         }
                     }
                 }
@@ -1478,6 +1487,11 @@ namespace Estrelas
                 Console.WriteLine($"Image id: {a.id} w: {a.width} h: {a.height} visible: {a.visible}");
                 a.pix.Width = 500;
             }
+        }
+
+        private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+           await Clean();
         }
     }
 }
