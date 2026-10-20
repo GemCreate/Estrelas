@@ -5,7 +5,8 @@
 
 // To-do:
 // HTTP +-
-// Multiple audio spurces
+// Multiple audio sources
+// Change audio library {Microsoft is preventing me from a Linux port}
 
 
 
